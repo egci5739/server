@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1;charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../lib/layui-v2.6.3/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+
+        <script type="text/html" id="toolbarDemo">
+            <div class="layui-btn-container">
+                <!--                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 下发</button>-->
+                <!--                <button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="delete"> 清空</button>-->
+            </div>
+        </script>
+
+        <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+
+
+        <script type="text/html" id="currentTableBar">
+            <a class="layui-btn layui-btn-normal layui-btn-xs data-count-edit" lay-event="edit">通行照片</a>
+            <!--            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">图片</a>-->
+        </script>
+
+    </div>
+</div>
+<script src="../../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script th:inline="javascript">
+    layui.use(['form', 'table'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table;
+
+        var limit = 0;
+
+        table.render({
+            elem: '#currentTableId',
+            url: '',
+            // url: [[${data}]],
+            toolbar: '#toolbarDemo',
+            defaultToolbar: ['filter', 'exports', 'print', {
+                title: '提示',
+                layEvent: 'LAYTABLE_TIPS',
+                icon: 'layui-icon-tips'
+            }],
+            cols: [
+                [
+                    {field: 'staffName', title: '姓名'},
+                    {field: 'staffCardNumber', title: '卡号'},
+                    {field: 'staffCardId', title: '证件号'},
+                    {field: 'staffCompany', title: '公司'},
+                    {field: 'staffUserId', title: '员工号'},
+                    {field: 'passTime', title: '时间'},
+                    {field: 'passEquipmentName', title: '设备名称'},
+                    {field: 'passSimilarity', title: '相似度'},
+                    {field: 'passResult', title: '通行结果'},
+                    {field: 'passCaptureImage', title: '通行图片', hide: true},
+                    {title: '操作', minWidth: 150, toolbar: '#currentTableBar', align: "center"}
+                ]
+            ],
+            limits: [1, 10, 15, 20, 25, 50, 100],
+            // limits: [50],
+            limit: 15,
+            page: true,
+            skin: 'line',
+            even: true,
+            initSort: {
+                field: 'passTime' //排序字段，对应 cols 设定的各字段名
+                , type: 'desc' //排序方式  asc: 升序、desc: 降序、null: 默认排序
+            },
+            loading: false,
+            done: function (res, curr, count) {
+                limit = $(".layui-laypage-limits").find("option:selected").val() - 1;
+                console.log("每页条数：" + limit);
+            }
+        });
+
+        //新增数据
+        function addPaaInfo(data) {
+            var pass = JSON.parse(data);
+            var newData = {
+                staffName: pass.staffName,
+                staffCardNumber: pass.staffCardNumber,
+                staffCardId: pass.staffCardId,
+                staffCompany: pass.staffCompany,
+                staffUserId: pass.staffUserId,
+                passTime: timestampToDate(pass.passTime),
+                passEquipmentName: pass.passEquipmentName,
+                passSimilarity: pass.passSimilarity,
+                passResult: resultToString(pass.passResult),
+                passCaptureImage: pass.passCaptureImage//passEquipmentIp作为抓拍图载体
+            }
+
+
+            var dataList = getDataList("currentTableId");//table的id
+            if (dataList.length > limit) {//人数 50人
+                dataList.splice(limit, 1);
+            }
+            var newDataList = dataList.concat(newData);
+            table.reload("currentTableId", {
+                data: newDataList
+            });
+            //执行搜索重载
+            return false;
+        }
+
+        // 监听搜索操作
+        form.on('submit(data-search-btn)', function (data) {
+
+        });
+
+        /**
+         * 获取列表数据
+         */
+        function getDataList(tableId) {
+            if (table.cache[tableId]) {
+                return table.cache[tableId];
+            }
+            return [];
+        }
+
+        /**
+         * toolbar监听事件
+         */
+        table.on('toolbar(currentTableFilter)', function (obj) {
+            if (obj.event === 'add') {  // 多人下发操作
+
+            } else if (obj.event === 'delete') {  // 清空页面
+                table.reload("currentTableId", {
+                    data: {}
+                })
+                //执行搜索重载
+                return false;
+            }
+        });
+        //监听表格复选框选择
+        table.on('checkbox(currentTableFilter)', function (obj) {
+            console.log(obj)
+        });
+
+        /*
+        * 监听表格操作
+        * */
+        table.on('tool(currentTableFilter)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'edit') {//查看图片
+                if (data.passResult == '卡号不存在' || data.passResult == '胁迫报警') {
+                    layer.msg("该类型事件没有照片");
+                    return;
+                }
+                console.log(data.passCaptureImage);
+                var src = "data:image/jpeg;base64," + data.passCaptureImage;
+                var json = {
+                    "title": "", //相册标题
+                    "id": 123, //相册id
+                    "start": 0, //初始显示的图片序号，默认0
+                    "data": [   //相册包含的图片，数组格式
+                        {
+                            "alt": data.staffName,
+                            "pid": 666, //图片id
+                            "src": src, //原图地址
+                            "thumb": "" //缩略图地址
+                        }
+                    ]
+                }
+                layer.photos({
+                    photos: json
+                    , anim: 5 //0-6的选择，指定弹出图片动画类型，默认随机（请注意，3.0之前的版本用shift参数）
+                });
+            } else if (obj.event === 'delete') {//单人删除
+                $.ajax({
+                    url: "/staffOperation/delStaff",
+                    type: 'post',
+                    contentType: 'application/json;charset=UTF-8',
+                    data: JSON.stringify(data),
+                    dataType: 'json',
+                    beforeSend: function () {
+                        this.layerIndex = layer.load(0, {shade: [0.5, '#393D49']});
+                    },
+                    success: function (data) {
+                        layer.alert(data.content, {title: data.title});
+                    },
+                    complete: function () {
+                        layer.close(this.layerIndex);
+                    },
+                });
+            }
+            return false;
+        });
+
+        /*
+        * webSocket
+        * */
+        var socket;
+        // function openSocket() {
+        if (typeof (WebSocket) == "undefined") {
+            console.log("您的浏览器不支持WebSocket");
+        } else {
+            console.log("您的浏览器支持WebSocket");
+            //实现化WebSocket对象，指定要连接的服务器地址与端口  建立连接
+            var userId = randomString(10);
+            var socketUrl = "ws://127.0.0.1:8080/webSocket/" + userId;
+            // var socketUrl = "ws://192.168.1.96:8080/webSocket/" + userId;
+            console.log(socketUrl);
+            if (socket != null) {
+                socket.close();
+                socket = null;
+            }
+            socket = new WebSocket(socketUrl);
+            //打开事件
+            socket.onopen = function () {
+                console.log("websocket已打开");
+                //socket.send("这是来自客户端的消息" + location.href + new Date());
+            };
+            //获得消息事件
+            socket.onmessage = function (msg) {
+                var serverMsg = "收到服务端信息：" + msg.data;
+                console.log(serverMsg);
+                addPaaInfo(msg.data);
+                //发现消息进入    开始处理前端触发逻辑
+            };
+            //关闭事件
+            socket.onclose = function () {
+                console.log("websocket已关闭");
+            };
+            //发生了错误事件
+            socket.onerror = function () {
+                console.log("websocket发生了错误");
+            }
+        }
+
+        // }
+
+        function sendMessage() {
+            if (typeof (WebSocket) == "undefined") {
+                console.log("您的浏览器不支持WebSocket");
+            } else {
+                // console.log("您的浏览器支持WebSocket");
+                var toUserId = document.getElementById('toUserId').value;
+                var contentText = document.getElementById('contentText').value;
+                var msg = '{"toUserId":"' + toUserId + '","contentText":"' + contentText + '"}';
+                console.log(msg);
+                socket.send(msg);
+            }
+        }
+
+        function randomString(len) {
+            len = len || 32;
+            var $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678';
+            /****默认去掉了容易混淆的字符oOLl,9gq,Vv,Uu,I1****/
+            var maxPos = $chars.length;
+            var pwd = '';
+            for (i = 0; i < len; i++) {
+                pwd += $chars.charAt(Math.floor(Math.random() * maxPos));
+            }
+            return pwd;
+        }
+
+        /*
+        * 时间戳转日期
+        * */
+        function timestampToDate(timestamp) {
+            var date = new Date(timestamp);
+            var Y = date.getFullYear() + '-';
+            var M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-';
+            var D = (date.getDate() < 10 ? '0' + date.getDate() : date.getDate()) + ' ';
+            var h = (date.getHours() < 10 ? '0' + date.getHours() : date.getHours()) + ':';
+            var m = (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()) + ':';
+            var s = (date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds());
+            var strDate = Y + M + D + h + m + s;
+            return strDate;
+        }
+
+        /*
+        * 通行结果转文字
+        * */
+        function resultToString(result) {
+            var pass = '';
+            switch (result) {
+                case 1:
+                    pass = '比对成功';
+                    break;
+                case 2:
+                    pass = '比对失败';
+                    break;
+                case 3:
+                    pass = '卡号不存在';
+                    break;
+                case 4:
+                    pass = '胁迫报警';
+                    break;
+                default:
+                    pass = '未知事件';
+                    break;
+            }
+            return pass;
+        }
+    });
+</script>
+
+</body>
+</html>

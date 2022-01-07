@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "config/mybatis-3-mapper.dtd">
+<mapper namespace="com.face.server.mapper.faceRecognition.PassMapper">
+    <insert id="insertPass" parameterType="com.face.server.entity.PassEntity" useGeneratedKeys="true"
+            keyProperty="passId">
+        INSERT INTO
+        PassTable
+        (staffName,staffCardNumber,staffCardId,staffCompany,staffUserId,passCaptureImage,passTime,passEquipmentName,passEquipmentIp,passResult,passNote,passSimilarity)
+        values
+        (#{staffName},#{staffCardNumber},#{staffCardId},#{staffCompany},#{staffUserId},#{passCaptureImage},#{passTime},#{passEquipmentName},#{passEquipmentIp},#{passResult},#{passNote},#{passSimilarity})
+    </insert>
+    <!--获取历史通行数据-->
+    <select id="getData" resultType="com.face.server.entity.PassEntity" flushCache="true" useCache="false">
+        select * from PassTable where passTime &gt; #{startTime} and passTime &lt;
+        #{endTime}
+        <if test="passEquipmentIp != 'all'">
+            and passEquipmentIp=#{passEquipmentIp}
+        </if>
+        <if test="passResult != 0">
+            and passResult=#{passResult}
+        </if>
+        <!--        <if test="passCardNumber != null">-->
+        <!--            and passCardNumber=#{passCardNumber}-->
+        <!--        </if>-->
+        <!--        <if test="passName != null">-->
+        <!--            and passName=#{passName}-->
+        <!--        </if>-->
+        ORDER BY passTime;
+    </select>
+</mapper>

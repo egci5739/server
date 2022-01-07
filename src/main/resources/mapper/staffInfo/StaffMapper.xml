@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "config/mybatis-3-mapper.dtd">
+<mapper namespace="com.face.server.mapper.staffInfo.StaffMapper">
+    <!--按卡号查询人员信息-->
+    <select id="getStaffByNum" resultType="com.face.server.entity.StaffEntity" flushCache="true" useCache="false">
+        select * from V_UserInfo where staffCardNumber = #{staffCardNumber} and staffImage is not null;
+    </select>
+    <!--查询所有人员信息-->
+    <!--    <select id="getAll" resultType="com.face.server.entity.StaffEntity" flushCache="true" useCache="false">-->
+    <!--        select top ${sum} * from V_UserInfo where staffImage is not null;-->
+    <!--    </select>-->
+    <!--查询所有人员信息-->
+    <select id="getAll" resultType="com.face.server.entity.StaffEntity" flushCache="true" useCache="false">
+        select * from V_UserInfo where staffImage is not null;
+    </select>
+    <!--按卡号查询人员信息-->
+    <select id="getStaffByCard" resultType="com.face.server.entity.StaffEntity" flushCache="true" useCache="false">
+        select * from V_UserInfo where staffCardNumber = #{staffCardNumber} and staffImage is not null;
+    </select>
+    <!--按姓名查询人员信息-->
+    <select id="getStaffByName" resultType="com.face.server.entity.StaffEntity" flushCache="true" useCache="false">
+        select * from V_UserInfo where staffName = #{staffName} and staffImage is not null;
+    </select>
+    <!--按员工号查询人员信息-->
+    <select id="getStaffByUserId" resultType="com.face.server.entity.StaffEntity" flushCache="true" useCache="false">
+        select * from V_UserInfo where staffUserId = #{staffUserId} and staffImage is not null;
+    </select>
+    <!--按证件号查询人员信息-->
+    <select id="getStaffByCardId" resultType="com.face.server.entity.StaffEntity" flushCache="true" useCache="false">
+        select * from V_UserInfo where staffCardId = #{staffCardId} and staffImage is not null;
+    </select>
+    <!--按卡号集合查询人员信息-->
+    <select id="getStaffByCards" resultType="com.face.server.entity.StaffEntity" flushCache="true" useCache="false">
+        select * from V_UserInfo where staffCardNumber in (${staffCardNumbers}) and staffImage is not null;
+    </select>
+    <!--根据卡号获取单个人员信息，给通行记录使用-->
+    <select id="getStaffByCardForPass" resultType="com.face.server.entity.StaffEntity" flushCache="true"
+            useCache="false">
+        select * from V_UserInfo where staffCardNumber = #{staffCardNumber} and staffImage is not null;
+    </select>
+</mapper>

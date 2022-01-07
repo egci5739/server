@@ -1,0 +1,51 @@
+{
+  "homeInfo": {
+    "title": "设备管理",
+    "href": "/equipment"
+  },
+  "logoInfo": {
+    "title": "人脸识别系统",
+    "image": "../../images/logo.png",
+    "href": ""
+  },
+  "menuInfo": [
+    {
+      "title": "常规管理",
+      "icon": "fa fa-address-book",
+      "href": "",
+      "target": "_self",
+      "child": [
+        {
+          "title": "设备管理",
+          "href": "/equipment",
+          "icon": "fa fa-gears",
+          "target": "_self"
+        },
+        {
+          "title": "人员操作",
+          "href": "/staffOperation",
+          "icon": "fa fa-file-text",
+          "target": "_self"
+        },
+        {
+          "title": "同步管理",
+          "href": "/staffSynchronization",
+          "icon": "fa fa-window-maximize",
+          "target": "_self"
+        },
+        {
+          "title": "实时监控",
+          "href": "/monitor",
+          "icon": "fa fa-shield",
+          "target": "_self"
+        },
+        {
+          "title": "历史记录",
+          "href": "/history",
+          "icon": "fa fa-list-alt",
+          "target": "_self"
+        }
+      ]
+    }
+  ]
+}
